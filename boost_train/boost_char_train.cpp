@@ -54,7 +54,8 @@ printf("Error test %f \n", fl2);
 
 
 //Try a char
-static const float arr[] = {0,0.479627, 0.739130, 0.256515, 0.000000,0.000000};
+static const float arr[] = {0,1.659899,0.684169,0.412175,150.000000,81.000000,0.540000,0.358025,0.151203,0.000000,0.000000};
+
 vector<float> sample (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 float prediction = boost.predict( Mat(sample), Mat(), Range::all(), false, false );
 float votes      = boost.predict( Mat(sample), Mat(), Range::all(), false, true );
@@ -62,7 +63,8 @@ float votes      = boost.predict( Mat(sample), Mat(), Range::all(), false, true 
 printf("\n The sample (360) is predicted as: %f (with number of votes = %f)\n", prediction,votes);
 
 //Try a NONchar
-static const float arr2[] = {0, 0.346410, 0.833333, 0.375000, 0.000000,0.000000};
+static const float arr2[] = {0,1.250000,0.433013,0.346410,9.000000,8.000000,0.888889,0.833333,0.375000,0.000000,0.000000};
+
 vector<float> sample2 (arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]) );
 prediction = boost.predict( Mat(sample2), Mat(), Range::all(), false, false );
 votes      = boost.predict( Mat(sample2), Mat(), Range::all(), false, true );

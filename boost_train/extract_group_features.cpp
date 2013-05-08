@@ -15,7 +15,7 @@ using namespace std;
 // Boosted tree classifier for single characters
 CvBoost character_classifier;
 
-float classifyRegion( Mat& region, float &_stroke_cv, float &_aspect_ratio, float &_compactness, float &_num_holes, float &_holearea_area_ratio )
+float classifyRegion( Mat& region, float &_stroke_mean, float &_aspect_ratio, float &_compactness, float &_num_holes, float &_holearea_area_ratio )
 {
 
 	RotatedRect bbox;
@@ -57,13 +57,13 @@ float classifyRegion( Mat& region, float &_stroke_cv, float &_aspect_ratio, floa
 
 	//fprintf(stdout,"X %f %f %f %f %f\n", stroke_std/stroke_mean, (float)min(bbox.size.width, bbox.size.height)/max(bbox.size.width, bbox.size.height), sqrt(area)/perimeter, (float)_num_holes, (float)holes_area/area);
 
-	_stroke_cv 	= stroke_std/stroke_mean;
+	_stroke_mean 	= stroke_mean;
 	_aspect_ratio 	= (float)min(bbox.size.width, bbox.size.height)/max(bbox.size.width, bbox.size.height);
 	_compactness  	= sqrt(area)/perimeter;
 	_holearea_area_ratio = (float)holes_area/area;
 
 
-	float arr[] = {0, _stroke_cv, _aspect_ratio, _compactness, _num_holes, _holearea_area_ratio};
+	float arr[] = {0, stroke_mean, stroke_std, stroke_std/stroke_mean, (float)area, (float)perimeter, (float)perimeter/area, _aspect_ratio, _compactness, _num_holes, _holearea_area_ratio};
 	vector<float> sample (arr, arr + sizeof(arr) / sizeof(arr[0]) );
 
 	float votes = character_classifier.predict( Mat(sample), Mat(), Range::all(), false, true );
@@ -105,7 +105,7 @@ int main( int argc, char** argv )
 			num_regions++;
 
 	Mat votes          ( num_regions, 1, CV_32F, 1 );
-	Mat stroke_cvs     ( num_regions, 1, CV_32F, 1 );
+	Mat stroke_means     ( num_regions, 1, CV_32F, 1 );
 	Mat aspect_ratios  ( num_regions, 1, CV_32F, 1 );
 	Mat compactnesses  ( num_regions, 1, CV_32F, 1 );
 	Mat nums_holes     ( num_regions, 1, CV_32F, 1 );
@@ -126,9 +126,9 @@ int main( int argc, char** argv )
 		canvas(bbox).copyTo( region(Rect(10, 10, bbox.width, bbox.height)) );
 
 
-		float stroke_cv, aspect_ratio, compactness, num_holes, holearea_area_ratio;
-		votes.at<float>(idx,0) = classifyRegion(region, stroke_cv, aspect_ratio, compactness, num_holes, holearea_area_ratio);
-		stroke_cvs.at<float>(idx,0) = stroke_cv;
+		float stroke_mean, aspect_ratio, compactness, num_holes, holearea_area_ratio;
+		votes.at<float>(idx,0) = classifyRegion(region, stroke_mean, aspect_ratio, compactness, num_holes, holearea_area_ratio);
+		stroke_means.at<float>(idx,0) = stroke_mean;
 		aspect_ratios.at<float>(idx,0) = aspect_ratio;
 		compactnesses.at<float>(idx,0) = compactness;
 		nums_holes.at<float>(idx,0) = num_holes;
@@ -143,7 +143,7 @@ int main( int argc, char** argv )
 	Scalar mean,std;
 	meanStdDev( votes, mean, std );
 	fprintf( stdout, "%s,%f,%f,%f", argv[2], mean[0], std[0], std[0]/mean[0] ); 
-	meanStdDev( stroke_cvs, mean, std );
+	meanStdDev( stroke_means, mean, std );
 	fprintf( stdout, ",%f,%f,%f", mean[0], std[0], std[0]/mean[0] ); 
 	meanStdDev( aspect_ratios, mean, std );
 	fprintf( stdout, ",%f,%f,%f", mean[0], std[0], std[0]/mean[0] ); 

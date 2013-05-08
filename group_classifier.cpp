@@ -24,7 +24,7 @@ bool GroupClassifier::operator()(vector<int> *group, vector<Region> *regions)
 	assert(regions != NULL);
 
 	Mat votes          ( group->size(), 1, CV_32F, 1 );
-	Mat stroke_cvs     ( group->size(), 1, CV_32F, 1 );
+	Mat strokes     ( group->size(), 1, CV_32F, 1 );
 	Mat aspect_ratios  ( group->size(), 1, CV_32F, 1 );
 	Mat compactnesses  ( group->size(), 1, CV_32F, 1 );
 	Mat nums_holes     ( group->size(), 1, CV_32F, 1 );
@@ -36,7 +36,7 @@ bool GroupClassifier::operator()(vector<int> *group, vector<Region> *regions)
 		regions->at(group->at(i)).classifier_votes_ = character_classifier_->get_votes(&regions->at(group->at(i)));
 
 		votes.at<float>(i,0) = regions->at(group->at(i)).classifier_votes_;
-		stroke_cvs.at<float>(i,0) = (float)regions->at(group->at(i)).stroke_std_ / regions->at(group->at(i)).stroke_mean_;
+		strokes.at<float>(i,0) = (float)regions->at(group->at(i)).stroke_std_ / regions->at(group->at(i)).stroke_mean_;
 		aspect_ratios.at<float>(i,0) = (float)min( regions->at(group->at(i)).rect_.size.width, regions->at(group->at(i)).rect_.size.height)/max( regions->at(group->at(i)).rect_.size.width, regions->at(group->at(i)).rect_.size.height);
 		compactnesses.at<float>(i,0) = sqrt(regions->at(group->at(i)).area_)/regions->at(group->at(i)).perimeter_;
 		nums_holes.at<float>(i,0) = (float)regions->at(group->at(i)).num_holes_;
@@ -51,7 +51,7 @@ bool GroupClassifier::operator()(vector<int> *group, vector<Region> *regions)
 	sample.push_back( mean[0]);
 	sample.push_back( std[0]);
 	sample.push_back( std[0]/mean[0] ); 
-	meanStdDev( stroke_cvs, mean, std );
+	meanStdDev( strokes, mean, std );
 	sample.push_back( mean[0]);
 	sample.push_back( std[0]);
 	sample.push_back( std[0]/mean[0] ); 
@@ -88,7 +88,7 @@ float GroupClassifier::get_votes(vector<int> *group, vector<Region> *regions)
 	assert(regions != NULL);
 
 	Mat votes          ( group->size(), 1, CV_32F, 1 );
-	Mat stroke_cvs     ( group->size(), 1, CV_32F, 1 );
+	Mat strokes     ( group->size(), 1, CV_32F, 1 );
 	Mat aspect_ratios  ( group->size(), 1, CV_32F, 1 );
 	Mat compactnesses  ( group->size(), 1, CV_32F, 1 );
 	Mat nums_holes     ( group->size(), 1, CV_32F, 1 );
@@ -100,7 +100,7 @@ float GroupClassifier::get_votes(vector<int> *group, vector<Region> *regions)
 		regions->at(group->at(i)).classifier_votes_ = character_classifier_->get_votes(&regions->at(group->at(i)));
 
 		votes.at<float>(i,0) = regions->at(group->at(i)).classifier_votes_;
-		stroke_cvs.at<float>(i,0) = (float)regions->at(group->at(i)).stroke_std_ / regions->at(group->at(i)).stroke_mean_;
+		strokes.at<float>(i,0) = (float)regions->at(group->at(i)).stroke_mean_;
 		aspect_ratios.at<float>(i,0) = (float)min( regions->at(group->at(i)).rect_.size.width, regions->at(group->at(i)).rect_.size.height)/max( regions->at(group->at(i)).rect_.size.width, regions->at(group->at(i)).rect_.size.height);
 		compactnesses.at<float>(i,0) = sqrt(regions->at(group->at(i)).area_)/regions->at(group->at(i)).perimeter_;
 		nums_holes.at<float>(i,0) = (float)regions->at(group->at(i)).num_holes_;
@@ -115,7 +115,7 @@ float GroupClassifier::get_votes(vector<int> *group, vector<Region> *regions)
 	sample.push_back( mean[0]);
 	sample.push_back( std[0]);
 	sample.push_back( std[0]/mean[0] ); 
-	meanStdDev( stroke_cvs, mean, std );
+	meanStdDev( strokes, mean, std );
 	sample.push_back( mean[0]);
 	sample.push_back( std[0]);
 	sample.push_back( std[0]/mean[0] ); 

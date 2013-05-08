@@ -20,7 +20,7 @@ bool RegionClassifier::operator()(Region *region)
 {
 	assert(region != NULL);
 
-	float sample_arr[] = {0, region->stroke_std_/region->stroke_mean_, (float)min( region->rect_.size.width, region->rect_.size.height)/max( region->rect_.size.width, region->rect_.size.height), sqrt(region->area_)/region->perimeter_, (float)region->num_holes_, (float)region->holes_area_/region->area_};
+	float sample_arr[] = {0, region->stroke_mean_, region->stroke_std_, region->stroke_std_/region->stroke_mean_, (float)region->area_, (float)region->perimeter_, (float)region->perimeter_/region->area_, (float)min( region->rect_.size.width, region->rect_.size.height)/max( region->rect_.size.width, region->rect_.size.height), sqrt(region->area_)/region->perimeter_, (float)region->num_holes_, (float)region->holes_area_/region->area_};
         vector<float> sample (sample_arr, sample_arr + sizeof(sample_arr) / sizeof(sample_arr[0]) );
 
 	float votes = boost_.predict( Mat(sample), Mat(), Range::all(), false, true );
@@ -35,7 +35,7 @@ float RegionClassifier::get_votes(Region *region)
 {
 	assert(region != NULL);
 
-	float sample_arr[] = {0, region->stroke_std_/region->stroke_mean_, (float)min( region->rect_.size.width, region->rect_.size.height)/max( region->rect_.size.width, region->rect_.size.height), sqrt(region->area_)/region->perimeter_, (float)region->num_holes_, (float)region->holes_area_/region->area_};
+	float sample_arr[] = {0, region->stroke_mean_, region->stroke_std_, region->stroke_std_/region->stroke_mean_, (float)region->area_, (float)region->perimeter_, (float)region->perimeter_/region->area_, (float)min( region->rect_.size.width, region->rect_.size.height)/max( region->rect_.size.width, region->rect_.size.height), sqrt(region->area_)/region->perimeter_, (float)region->num_holes_, (float)region->holes_area_/region->area_};
         vector<float> sample (sample_arr, sample_arr + sizeof(sample_arr) / sizeof(sample_arr[0]) );
 
 	return boost_.predict( Mat(sample), Mat(), Range::all(), false, true );

@@ -53,7 +53,7 @@ int main( int argc, char** argv )
 
 	bbox = minAreaRect(contours0.at(0));
 
-	fprintf(stdout,"%s %f %f %f %f %f\n", argv[2], stroke_std/stroke_mean, (float)min(bbox.size.width, bbox.size.height)/max(bbox.size.width, bbox.size.height), sqrt(area)/perimeter, (float)num_holes, (float)holes_area/area);
+	fprintf(stdout,"%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", argv[2], stroke_mean, stroke_std, stroke_std/stroke_mean, (float)area, (float)perimeter, (float)perimeter/area, (float)min(bbox.size.width, bbox.size.height)/max(bbox.size.width, bbox.size.height), sqrt(area)/perimeter, (float)num_holes, (float)holes_area/area);
 
 	return(0);
 }
