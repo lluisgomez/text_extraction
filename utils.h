@@ -1,13 +1,13 @@
 
-void accumulate_evidence(vector<vector<int> > *meaningful_clusters, int grow, Mat *co_occurrence)
+void accumulate_evidence(vector<int> *meaningful_cluster, int grow, Mat *co_occurrence)
 {
-	for (int k=0; k<meaningful_clusters->size(); k++)
-	   for (int i=0; i<meaningful_clusters->at(k).size(); i++)
-	   	for (int j=i; j<meaningful_clusters->at(k).size(); j++)
-			if (meaningful_clusters->at(k).at(i) != meaningful_clusters->at(k).at(j))
+	//for (int k=0; k<meaningful_clusters->size(); k++)
+	   for (int i=0; i<meaningful_cluster->size(); i++)
+	   	for (int j=i; j<meaningful_cluster->size(); j++)
+			if (meaningful_cluster->at(i) != meaningful_cluster->at(j))
 			{
-			    co_occurrence->at<double>(meaningful_clusters->at(k).at(i), meaningful_clusters->at(k).at(j)) += grow;
-			    co_occurrence->at<double>(meaningful_clusters->at(k).at(j), meaningful_clusters->at(k).at(i)) += grow;
+			    co_occurrence->at<double>(meaningful_cluster->at(i), meaningful_cluster->at(j)) += grow;
+			    co_occurrence->at<double>(meaningful_cluster->at(j), meaningful_cluster->at(i)) += grow;
 			}
 }
 
@@ -44,7 +44,7 @@ static uchar bcolors[][3] =
 
 void drawClusters(Mat& img, vector<Region> *regions, vector<vector<int> > *meaningful_clusters)
 {
-	img = img*0;
+	//img = img*0;
 	uchar* rsptr = (uchar*)img.data;
 	for (int i=0; i<meaningful_clusters->size(); i++)
 	{

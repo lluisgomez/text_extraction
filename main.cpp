@@ -26,13 +26,16 @@ int main( int argc, char** argv )
     VideoCapture cap(0);
     if(!cap.isOpened()) return -1;
 
-    Mat img, grey, lab_img, gradient_magnitude;
+    Mat img, grey, lab_img, gradient_magnitude, segmentation, all_segmentations;
 
     vector<Region> regions;
     ::MSER mser8(false,21,0.00005,0.3,1,0.7);
 
-    RegionClassifier region_boost("../data/trained_boost_char.xml", 0); 
-    GroupClassifier  group_boost("../data/trained_boost_groups.xml", &region_boost, 5); 
+    RegionClassifier region_boost("boost_train/trained_boost_char.xml", 0); 
+    GroupClassifier  group_boost("boost_train/trained_boost_groups.xml", &region_boost, 5); 
+
+	
+    int step = 1;
 
     for (;;)
     {
@@ -47,6 +50,14 @@ int main( int argc, char** argv )
 	cvtColor(img, lab_img, CV_BGR2Lab);
 	gradient_magnitude = Mat_<double>(img.size());
 	get_gradient_magnitude( grey, gradient_magnitude);
+
+	if (step == 2)
+		grey = 255-grey;
+	else 
+	{
+		segmentation = Mat::zeros(img.size(),CV_8UC3);
+		all_segmentations = Mat::zeros(240,320*11,CV_8UC3);
+	}
 
 	//extract_text(img, grey);
 	double t = (double)cvGetTickCount();
@@ -91,8 +102,8 @@ int main( int argc, char** argv )
 		int count = 0;
 		for (int i=0; i<regions.size(); i++)
 		{
-			data[count] = (t_float)regions.at(i).center_.x/img.cols;
-			data[count+1] = (t_float)regions.at(i).center_.y/img.rows;
+			data[count] = (t_float)(regions.at(i).bbox_.x+regions.at(i).bbox_.width/2)/img.cols;
+			data[count+1] = (t_float)(regions.at(i).bbox_.y+regions.at(i).bbox_.height/2)/img.rows;
 			switch (f)
 			{
 				case 0:
@@ -136,9 +147,19 @@ int main( int argc, char** argv )
 			count = count+dim;
 		}
 
-		mm_clustering(data, N, dim, METHOD_METR_SINGLE, METRIC_SEUCLIDEAN, &meaningful_clusters);
+		mm_clustering(data, N, dim, METHOD_METR_SINGLE, METRIC_SEUCLIDEAN, &meaningful_clusters); // TODO try accumulating more evidence by using different methods and metrics
 
-		accumulate_evidence(&meaningful_clusters, 1, &co_occurrence_matrix);
+		for (int k=0; k<meaningful_clusters.size(); k++)
+		    //if ( group_boost(&meaningful_clusters.at(k), &regions)) // TODO try is it's betetr to accumulate only the most probable text groups
+			accumulate_evidence(&meaningful_clusters.at(k), 1, &co_occurrence_matrix);
+		
+		Mat tmp_segmentation = Mat::zeros(img.size(),CV_8UC3);
+		Mat tmp_all_segmentations = Mat::zeros(240,320*11,CV_8UC3);
+		drawClusters(tmp_segmentation, &regions, &meaningful_clusters);
+		Mat tmp = Mat::zeros(240,320,CV_8UC3);
+		resize(tmp_segmentation,tmp,tmp.size());
+		tmp.copyTo(tmp_all_segmentations(Rect(320*f,0,320,240)));
+		all_segmentations = all_segmentations + tmp_all_segmentations;
 
 		free(data);
 		meaningful_clusters.clear();
@@ -152,7 +173,7 @@ int main( int argc, char** argv )
 	double maxVal;
 	minMaxLoc(co_occurrence_matrix, &minVal, &maxVal);
 
-	maxVal = NUM_FEATURES - 1; //TODO this is true only if you are using "grow == 1" in accumulate_evidence function
+	//maxVal = NUM_FEATURES - 1; //TODO this is true only if you are using "grow == 1" in accumulate_evidence function
 	minVal=0;
 
 	co_occurrence_matrix = maxVal - co_occurrence_matrix;
@@ -171,7 +192,7 @@ int main( int argc, char** argv )
 	}
 	
 	// fast clustering from the co-occurrence matrix
-	mm_clustering(D, regions.size(), METHOD_METR_AVERAGE, &meaningful_clusters);
+	mm_clustering(D, regions.size(), METHOD_METR_AVERAGE, &meaningful_clusters); //  TODO try with METHOD_METR_COMPLETE
 	free(D);
 	
 	t = cvGetTickCount() - t;
@@ -184,12 +205,20 @@ int main( int argc, char** argv )
 			meaningful_clusters.erase(meaningful_clusters.begin()+i);
 	}
 
-	drawClusters(img, &regions, &meaningful_clusters);
-	
-	imshow("Evidence Accumulation Clustering",img);
+	drawClusters(segmentation, &regions, &meaningful_clusters);
 
-	if( cvWaitKey( 10 ) >= 0 )
-		break;
+	if (step == 2)
+	{	
+		imshow("Evidence Accumulation Clustering",segmentation);
+		imshow("All Clustering",all_segmentations);
+
+		if( cvWaitKey(10) == 27 )
+			break;
+
+		step = 1;
+	}
+	else 
+		step++;
 
 
 	regions.clear();
