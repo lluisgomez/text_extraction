@@ -57,7 +57,6 @@ int main( int argc, char** argv )
 	{
 		segmentation = Mat::zeros(img.size(),CV_8UC3);
 		all_segmentations = Mat::zeros(240,320*11,CV_8UC3);
-		grey = 255-grey;
 	}
 
 	//extract_text(img, grey);
@@ -123,7 +122,7 @@ int main( int argc, char** argv )
 				    data[count+2] = (t_float)max(regions.at(i).bbox_.height, regions.at(i).bbox_.width)/max(img.rows,img.cols);	
 				    break;	
 				case 5:
-				    data[count+2] = (t_float)regions.at(i).stroke_mean_/640;	
+				    data[count+2] = (t_float)regions.at(i).stroke_mean_/max_stroke;	
 				    break;	
 				case 6:
 				    data[count+2] = (t_float)regions.at(i).area_/(img.rows*img.cols);	
@@ -151,7 +150,7 @@ int main( int argc, char** argv )
 		mm_clustering(data, N, dim, METHOD_METR_SINGLE, METRIC_SEUCLIDEAN, &meaningful_clusters); // TODO try accumulating more evidence by using different methods and metrics
 
 		for (int k=0; k<meaningful_clusters.size(); k++)
-		    if ( group_boost(&meaningful_clusters.at(k), &regions)) // TODO try is it's betetr to accumulate only the most probable text groups
+		    //if ( group_boost(&meaningful_clusters.at(k), &regions)) // TODO try is it's betetr to accumulate only the most probable text groups
 			accumulate_evidence(&meaningful_clusters.at(k), 1, &co_occurrence_matrix);
 		
 		Mat tmp_segmentation = Mat::zeros(img.size(),CV_8UC3);
