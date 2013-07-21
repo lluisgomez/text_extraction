@@ -9,10 +9,10 @@ GroupClassifier::GroupClassifier(char *trained_boost_filename, RegionClassifier 
 	ifstream ifile1(trained_boost_filename);
 	if (ifile1) 
 	{
-		fprintf(stdout,"Loading boost character classifier ... \n");
+		//fprintf(stdout,"Loading boost character classifier ... \n");
 		boost_.load(trained_boost_filename, "boost");
 	} else {
-		fprintf(stderr,"Boost character classifier, file not found! \n");
+		//fprintf(stderr,"Boost character classifier, file not found! \n");
 		exit(-1);
 	}
 }
@@ -74,6 +74,8 @@ bool GroupClassifier::operator()(vector<int> *group, vector<Region> *regions)
 
 
 	float votes_group = boost_.predict( Mat(sample), Mat(), Range::all(), false, true );
+
+  //cout << " votes "<< votes_group << " thresh " << decision_threshold_ << endl;
 
 	if (votes_group <= decision_threshold_)
 		return true;
