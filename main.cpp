@@ -200,12 +200,24 @@ int main( int argc, char** argv )
     {	
       cvtColor(segmentation, grey, CV_BGR2GRAY);
       threshold(grey,grey,1,255,CV_THRESH_BINARY);
-
-      imshow("Original", img);
-      imshow("Text extraction", grey);
-      waitKey(0);
-
       imwrite("out.png", grey);
+      
+      if (argc > 2)
+      {
+        Mat gt;
+        gt = imread(argv[2]);
+        cvtColor(gt, gt, CV_RGB2GRAY);
+        threshold(gt, gt, 254, 255, CV_THRESH_BINARY);
+        Mat tmp_mask = (255-gt) & (grey);
+        cout << "Pixel level recall = " << (float)countNonZero(tmp_mask) / countNonZero(255-gt) << endl;
+      }
+      else
+      {
+        imshow("Original", img);
+        imshow("Text extraction", grey);
+        waitKey(0);
+      }
+
     }
 
 
