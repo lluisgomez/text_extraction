@@ -1,4 +1,5 @@
-
+#include <math.h>
+#include <float.h>
 
 /*----------------------------------------------------------------------------*/
 /** Doubles relative error factor
@@ -179,7 +180,7 @@ static double NFA(int n, int k, double p, double logNT)
   /* check parameters */
   if( n<0 || k<0 || k>n || p<=0.0 || p>=1.0 ) {
     //fprintf(stderr,"nfa: wrong n, k or p values. (%d , %d , %f)",n,k,p);
-	exit(-1);
+	  //exit(-1);
   }
 
   /* trivial cases */
