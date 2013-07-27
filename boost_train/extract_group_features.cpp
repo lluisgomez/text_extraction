@@ -29,7 +29,7 @@ float classifyRegion( Mat& region, float &_stroke_mean, float &_aspect_ratio, fl
 	distanceTransform(bw, tmp, CV_DIST_L1,3); //L1 gives distance in round integers while L2 floats
 
 	Scalar mean,std;
-        meanStdDev(tmp,mean,std,bw);
+  meanStdDev(tmp,mean,std,bw);
 	stroke_mean = mean[0];
 	stroke_std  = std[0];
 
@@ -86,6 +86,8 @@ int main( int argc, char** argv )
 	}
 
     	Mat bw = imread(argv[1], 0);
+
+  copyMakeBorder(bw, bw, 1, 1, 1, 1, BORDER_CONSTANT, Scalar(255));
 	threshold( bw, bw, 128, 255, THRESH_BINARY_INV ); //group samples are black over white
 
 	vector<vector<Point> > contours;
@@ -105,7 +107,7 @@ int main( int argc, char** argv )
 			num_regions++;
 
 	Mat votes          ( num_regions, 1, CV_32F, 1 );
-	Mat stroke_means     ( num_regions, 1, CV_32F, 1 );
+	Mat stroke_means   ( num_regions, 1, CV_32F, 1 );
 	Mat aspect_ratios  ( num_regions, 1, CV_32F, 1 );
 	Mat compactnesses  ( num_regions, 1, CV_32F, 1 );
 	Mat nums_holes     ( num_regions, 1, CV_32F, 1 );
@@ -138,8 +140,6 @@ int main( int argc, char** argv )
 
 	}
 
-
-	
 	Scalar mean,std;
 	meanStdDev( votes, mean, std );
 	fprintf( stdout, "%s,%f,%f,%f", argv[2], mean[0], std[0], std[0]/mean[0] ); 

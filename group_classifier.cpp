@@ -36,7 +36,7 @@ bool GroupClassifier::operator()(vector<int> *group, vector<Region> *regions)
 		regions->at(group->at(i)).classifier_votes_ = character_classifier_->get_votes(&regions->at(group->at(i)));
 
 		votes.at<float>(i,0) = regions->at(group->at(i)).classifier_votes_;
-		strokes.at<float>(i,0) = (float)regions->at(group->at(i)).stroke_std_ / regions->at(group->at(i)).stroke_mean_;
+		strokes.at<float>(i,0) = (float)regions->at(group->at(i)).stroke_mean_;
 		aspect_ratios.at<float>(i,0) = (float)min( regions->at(group->at(i)).rect_.size.width, regions->at(group->at(i)).rect_.size.height)/max( regions->at(group->at(i)).rect_.size.width, regions->at(group->at(i)).rect_.size.height);
 		compactnesses.at<float>(i,0) = sqrt(regions->at(group->at(i)).area_)/regions->at(group->at(i)).perimeter_;
 		nums_holes.at<float>(i,0) = (float)regions->at(group->at(i)).num_holes_;
@@ -75,10 +75,15 @@ bool GroupClassifier::operator()(vector<int> *group, vector<Region> *regions)
 
 	float votes_group = boost_.predict( Mat(sample), Mat(), Range::all(), false, true );
 
-  //cout << " votes "<< votes_group << " thresh " << decision_threshold_ << endl;
 
-	if (votes_group <= decision_threshold_)
+	if (votes_group <= decision_threshold_) 
+  {
+    /*cout << " votes_group " << votes_group << " size " <<  group->size() << endl;
+    for (int i=0; i< sample.size();i++)
+      cout << sample[i] << ",";
+    cout << endl;*/
 		return true;
+  }
 
 	return false;
 }

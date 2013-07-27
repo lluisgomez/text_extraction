@@ -21,7 +21,7 @@ for i in range(0,7500):
 
 
 # labeled boundaries
-for dirname, dirnames, filenames in os.walk('../../data/train/characters/CHARS/'):
+for dirname, dirnames, filenames in os.walk('../../Escriptori/text_extraction/data/train/characters/CHARS'):
 	for filename in filenames:
 	    if ('jpg' in filename):
 		image_filename = os.path.join(dirname, filename)
@@ -30,7 +30,7 @@ for dirname, dirnames, filenames in os.walk('../../data/train/characters/CHARS/'
     		process = subprocess.Popen(command, shell=True)
     		process.wait()
 
-for dirname, dirnames, filenames in os.walk('../../data/train/characters/NO_CHARS/'):
+for dirname, dirnames, filenames in os.walk('../../Escriptori/text_extraction/data/train/characters/NO_CHARS'):
 	for filename in filenames:
 	    if ('jpg' in filename):
 		image_filename = os.path.join(dirname, filename)

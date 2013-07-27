@@ -26,10 +26,10 @@ int main( int argc, char** argv )
     Mat img, grey, lab_img, gradient_magnitude, segmentation, all_segmentations;
 
     vector<Region> regions;
-    ::MSER mser8(false,21,0.00005,0.13,1,0.7);
+    ::MSER mser8(false,25,0.00008,0.03,1,0.7);
 
     RegionClassifier region_boost("boost_train/trained_boost_char.xml", 0); 
-    GroupClassifier  group_boost("boost_train/trained_boost_groups.xml", &region_boost, 55); 
+    GroupClassifier  group_boost("boost_train/trained_boost_groups.xml", &region_boost, 0); 
 
     img = imread(argv[1]);
     cvtColor(img, grey, CV_BGR2GRAY);
@@ -52,6 +52,7 @@ int main( int argc, char** argv )
     //double t = (double)cvGetTickCount();
     mser8((uchar*)grey.data, grey.cols, grey.rows, regions);
 
+
     //t = cvGetTickCount() - t;
     //cout << "Detected " << regions.size() << " regions" << " in " << t/((double)cvGetTickFrequency()*1000.) << " ms." << endl;
     //t = (double)cvGetTickCount();
@@ -70,6 +71,12 @@ int main( int argc, char** argv )
       regions[i].extract_features(lab_img, grey, gradient_magnitude);
       max_stroke = max(max_stroke, regions[i].stroke_mean_);
     }
+    /*for (int i=regions.size()-1; i>=0; i--)
+    {
+        if ( (regions.at(i).stroke_std_/regions.at(i).stroke_mean_ > 0.8) || (regions.at(i).num_holes_>2) || (regions.at(i).bbox_.width <=3) || (regions.at(i).bbox_.height <=3) )
+      	  regions.erase(regions.begin()+i);
+    }
+    cout << "MSER extracted " << regions.size() << " regions" << endl;*/
 
     //t = cvGetTickCount() - t;
     //cout << "Features extracted in " << t/((double)cvGetTickFrequency()*1000.) << " ms." << endl;
@@ -151,24 +158,25 @@ int main( int argc, char** argv )
       all_segmentations = all_segmentations + tmp_all_segmentations;
 
       free(data);
-      meaningful_clusters.clear();
+      //meaningful_clusters.clear();
     }
     //t = cvGetTickCount() - t;
     //cout << "Clusterings (" << NUM_FEATURES << ") done in " << t/((double)cvGetTickFrequency()*1000.) << " ms." << endl;
     //t = (double)cvGetTickCount();
 
     /**/
-    double minVal;
+    /*double minVal;
     double maxVal;
     minMaxLoc(co_occurrence_matrix, &minVal, &maxVal);
 
-    //maxVal = NUM_FEATURES - 1; //TODO this is true only if you are using "grow == 1" in accumulate_evidence function
+    maxVal = NUM_FEATURES - 1; //TODO this is true only if you are using "grow == 1" in accumulate_evidence function
     minVal=0;
 
     co_occurrence_matrix = maxVal - co_occurrence_matrix;
     co_occurrence_matrix = co_occurrence_matrix / maxVal;
 
-    /*we want a sparse matrix*/
+    //we want a sparse matrix
+    
     t_float *D = (t_float*)malloc((regions.size()*regions.size()) * sizeof(t_float)); 
     int pos = 0;
     for (int i = 0; i<co_occurrence_matrix.rows; i++)
@@ -182,7 +190,7 @@ int main( int argc, char** argv )
     
     // fast clustering from the co-occurrence matrix
     mm_clustering(D, regions.size(), METHOD_METR_AVERAGE, &meaningful_clusters); //  TODO try with METHOD_METR_COMPLETE
-    free(D);
+    free(D);*/
     
     //t = cvGetTickCount() - t;
     //cout << "Evidence Accumulation Clustering done in " << t/((double)cvGetTickFrequency()*1000.) << " ms. Got " << meaningful_clusters.size() << " clusters." << endl;
@@ -191,7 +199,9 @@ int main( int argc, char** argv )
     for (int i=meaningful_clusters.size()-1; i>=0; i--)
     {
       if ( (! group_boost(&meaningful_clusters.at(i), &regions)) || (meaningful_clusters.at(i).size()<3) )
+      {
       	meaningful_clusters.erase(meaningful_clusters.begin()+i);
+      }
     }
 
     drawClusters(segmentation, &regions, &meaningful_clusters);
@@ -207,14 +217,15 @@ int main( int argc, char** argv )
         Mat gt;
         gt = imread(argv[2]);
         cvtColor(gt, gt, CV_RGB2GRAY);
-        threshold(gt, gt, 254, 255, CV_THRESH_BINARY);
+        threshold(gt, gt, 1, 255, CV_THRESH_BINARY_INV);
         Mat tmp_mask = (255-gt) & (grey);
         cout << "Pixel level recall = " << (float)countNonZero(tmp_mask) / countNonZero(255-gt) << endl;
+        cout << "Pixel level precission = " << (float)countNonZero(tmp_mask) / countNonZero(grey) << endl;
       }
       else
       {
         imshow("Original", img);
-        imshow("Text extraction", grey);
+        imshow("Text extraction", segmentation);
         waitKey(0);
       }
 

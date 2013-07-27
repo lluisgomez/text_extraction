@@ -375,6 +375,7 @@ void Region::extract_features(Mat& _lab_img, Mat& _grey_img, Mat& _gradient_magn
 	copyMakeBorder(bw, bw, 5, 5, 5, 5, BORDER_CONSTANT, Scalar(0));
 
 	num_holes_ = 0;
+	holes_area_ = 0;
 	vector<vector<Point> > contours0;
 	vector<Vec4i> hierarchy;
 	findContours( bw, contours0, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);

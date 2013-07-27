@@ -23,7 +23,7 @@ cvml.set_response_idx(0);
 
 /* STEP 3. Splitting the samples */
 //1. Select 50% for the training (an integer value is also allowed here)
-CvTrainTestSplit cvtts(0.5f, true);
+CvTrainTestSplit cvtts(0.9f, true);
 //2. Assign the division to the data
 cvml.set_train_test_split(&cvtts);
 
