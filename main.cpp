@@ -66,17 +66,14 @@ int main( int argc, char** argv )
 
 
     double max_stroke = 0;
-    for (int i=0; i<regions.size(); i++)
+    for (int i=regions.size()-1; i>=0; i--)
     {
       regions[i].extract_features(lab_img, grey, gradient_magnitude);
-      max_stroke = max(max_stroke, regions[i].stroke_mean_);
+      if ( (regions.at(i).stroke_std_/regions.at(i).stroke_mean_ > 0.8) || (regions.at(i).num_holes_>2) || (regions.at(i).bbox_.width <=3) || (regions.at(i).bbox_.height <=3) )
+      	regions.erase(regions.begin()+i);
+      else 
+        max_stroke = max(max_stroke, regions[i].stroke_mean_);
     }
-    /*for (int i=regions.size()-1; i>=0; i--)
-    {
-        if ( (regions.at(i).stroke_std_/regions.at(i).stroke_mean_ > 0.8) || (regions.at(i).num_holes_>2) || (regions.at(i).bbox_.width <=3) || (regions.at(i).bbox_.height <=3) )
-      	  regions.erase(regions.begin()+i);
-    }
-    cout << "MSER extracted " << regions.size() << " regions" << endl;*/
 
     //t = cvGetTickCount() - t;
     //cout << "Features extracted in " << t/((double)cvGetTickFrequency()*1000.) << " ms." << endl;
@@ -158,14 +155,14 @@ int main( int argc, char** argv )
       all_segmentations = all_segmentations + tmp_all_segmentations;
 
       free(data);
-      //meaningful_clusters.clear();
+      meaningful_clusters.clear();
     }
     //t = cvGetTickCount() - t;
     //cout << "Clusterings (" << NUM_FEATURES << ") done in " << t/((double)cvGetTickFrequency()*1000.) << " ms." << endl;
     //t = (double)cvGetTickCount();
 
     /**/
-    /*double minVal;
+    double minVal;
     double maxVal;
     minMaxLoc(co_occurrence_matrix, &minVal, &maxVal);
 
@@ -190,19 +187,27 @@ int main( int argc, char** argv )
     
     // fast clustering from the co-occurrence matrix
     mm_clustering(D, regions.size(), METHOD_METR_AVERAGE, &meaningful_clusters); //  TODO try with METHOD_METR_COMPLETE
-    free(D);*/
+    free(D);
     
     //t = cvGetTickCount() - t;
     //cout << "Evidence Accumulation Clustering done in " << t/((double)cvGetTickFrequency()*1000.) << " ms. Got " << meaningful_clusters.size() << " clusters." << endl;
     //t = (double)cvGetTickCount();
 
+
     for (int i=meaningful_clusters.size()-1; i>=0; i--)
     {
-      if ( (! group_boost(&meaningful_clusters.at(i), &regions)) || (meaningful_clusters.at(i).size()<3) )
+      //if ( (! group_boost(&meaningful_clusters.at(i), &regions)) || (meaningful_clusters.at(i).size()<3) )
+      if ( (! group_boost(&meaningful_clusters.at(i), &regions)) )
       {
       	meaningful_clusters.erase(meaningful_clusters.begin()+i);
       }
     }
+
+/*    vector<int> fake;
+    for (int i=0; i< regions.size(); i++)
+      fake.push_back(i);
+
+    meaningful_clusters.push_back(fake);*/
 
     drawClusters(segmentation, &regions, &meaningful_clusters);
 
