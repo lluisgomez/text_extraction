@@ -14,7 +14,8 @@
 
 #define NUM_FEATURES 11 
 
-#define DECISION_THRESHOLD 0.5
+#define DECISION_THRESHOLD_EA 0.5
+#define DECISION_THRESHOLD_SF 0.999999999
 
 using namespace std;
 using namespace cv;
@@ -84,6 +85,7 @@ int main( int argc, char** argv )
     MaxMeaningfulClustering 	mm_clustering(METHOD_METR_SINGLE, METRIC_SEUCLIDEAN);
 
     vector< vector<int> > meaningful_clusters;
+    vector< vector<int> > final_clusters;
     Mat co_occurrence_matrix = Mat::zeros((int)regions.size(), (int)regions.size(), CV_64F);
 
     int dims[NUM_FEATURES] = {3,3,3,3,3,3,3,3,3,5,5};
@@ -145,8 +147,15 @@ int main( int argc, char** argv )
       mm_clustering(data, N, dim, METHOD_METR_SINGLE, METRIC_SEUCLIDEAN, &meaningful_clusters); // TODO try accumulating more evidence by using different methods and metrics
 
       for (int k=0; k<meaningful_clusters.size(); k++)
+      {
           //if ( group_boost(&meaningful_clusters.at(k), &regions)) // TODO try is it's betetr to accumulate only the most probable text groups
         accumulate_evidence(&meaningful_clusters.at(k), 1, &co_occurrence_matrix);
+
+        if ( (group_boost(&meaningful_clusters.at(k), &regions) >= DECISION_THRESHOLD_SF) )
+        {
+          final_clusters.push_back(meaningful_clusters.at(k));
+        }
+      }
       
       Mat tmp_segmentation = Mat::zeros(img.size(),CV_8UC3);
       Mat tmp_all_segmentations = Mat::zeros(240,320*11,CV_8UC3);
@@ -199,19 +208,13 @@ int main( int argc, char** argv )
     for (int i=meaningful_clusters.size()-1; i>=0; i--)
     {
       //if ( (! group_boost(&meaningful_clusters.at(i), &regions)) || (meaningful_clusters.at(i).size()<3) )
-      if ( (group_boost(&meaningful_clusters.at(i), &regions) < DECISION_THRESHOLD) )
+      if ( (group_boost(&meaningful_clusters.at(i), &regions) >= DECISION_THRESHOLD_EA) )
       {
-      	meaningful_clusters.erase(meaningful_clusters.begin()+i);
+      	final_clusters.push_back(meaningful_clusters.at(i));
       }
     }
 
-/*    vector<int> fake;
-    for (int i=0; i< regions.size(); i++)
-      fake.push_back(i);
-
-    meaningful_clusters.push_back(fake);*/
-
-    drawClusters(segmentation, &regions, &meaningful_clusters);
+    drawClusters(segmentation, &regions, &final_clusters);
 
     if (step == 2)
     {	
