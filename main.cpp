@@ -14,6 +14,8 @@
 
 #define NUM_FEATURES 11 
 
+#define DECISION_THRESHOLD 0.5
+
 using namespace std;
 using namespace cv;
 
@@ -29,7 +31,7 @@ int main( int argc, char** argv )
     ::MSER mser8(false,25,0.00008,0.03,1,0.7);
 
     RegionClassifier region_boost("boost_train/trained_boost_char.xml", 0); 
-    GroupClassifier  group_boost("boost_train/trained_boost_groups.xml", &region_boost, 0); 
+    GroupClassifier  group_boost("boost_train/trained_boost_groups.xml", &region_boost); 
 
     img = imread(argv[1]);
     cvtColor(img, grey, CV_BGR2GRAY);
@@ -197,7 +199,7 @@ int main( int argc, char** argv )
     for (int i=meaningful_clusters.size()-1; i>=0; i--)
     {
       //if ( (! group_boost(&meaningful_clusters.at(i), &regions)) || (meaningful_clusters.at(i).size()<3) )
-      if ( (! group_boost(&meaningful_clusters.at(i), &regions)) )
+      if ( (group_boost(&meaningful_clusters.at(i), &regions) < DECISION_THRESHOLD) )
       {
       	meaningful_clusters.erase(meaningful_clusters.begin()+i);
       }
