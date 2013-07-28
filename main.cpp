@@ -29,7 +29,7 @@ int main( int argc, char** argv )
     Mat img, grey, lab_img, gradient_magnitude, segmentation, all_segmentations;
 
     vector<Region> regions;
-    ::MSER mser8(false,25,0.00008,0.03,1,0.7);
+    ::MSER mser8(false,25,0.000008,0.03,1,0.7);
 
     RegionClassifier region_boost("boost_train/trained_boost_char.xml", 0); 
     GroupClassifier  group_boost("boost_train/trained_boost_groups.xml", &region_boost); 
@@ -227,7 +227,8 @@ int main( int argc, char** argv )
         Mat gt;
         gt = imread(argv[2]);
         cvtColor(gt, gt, CV_RGB2GRAY);
-        threshold(gt, gt, 1, 255, CV_THRESH_BINARY_INV);
+        threshold(gt, gt, 1, 255, CV_THRESH_BINARY_INV); // <- for KAIST gt
+        //threshold(gt, gt, 254, 255, CV_THRESH_BINARY); // <- for ICDAR gt
         Mat tmp_mask = (255-gt) & (grey);
         cout << "Pixel level recall = " << (float)countNonZero(tmp_mask) / countNonZero(255-gt) << endl;
         cout << "Pixel level precission = " << (float)countNonZero(tmp_mask) / countNonZero(grey) << endl;
