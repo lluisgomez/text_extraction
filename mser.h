@@ -50,6 +50,9 @@ public:
 	/// @param[in] height Height of the image.
 	/// @param[out] regions Detected MSER.
 	void operator()(const uint8_t * bits, int width, int height, std::vector<Region> & regions);
+
+	// return true if use 8-connected, otherwise false.
+	bool connect8(){ return eight_; }
 	
 private:
 	// Helper method

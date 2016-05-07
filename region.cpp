@@ -152,7 +152,7 @@ All rights reserved.
 The function is part of the VLFeat library and is made available under
 the terms of the BSD license (see the COPYING file).
 */
-void Region::er_fill(Mat& _grey_img)
+void Region::er_fill(Mat& _grey_img, bool _eight )
 {
 	const uint8_t *src = (uint8_t*)_grey_img.data;
 	
@@ -254,7 +254,7 @@ void Region::er_fill(Mat& _grey_img)
 	       4 - the pixel has not been visited yet
 	    */
 	    if(good
-	       && nindex != index
+			&& (nindex != index && (_eight || !(nsubs_pt[0] & nsubs_pt[1])))
 	       && ((!invert && I_pt [nindex] <= value) ||
 	           ( invert && I_pt [nindex] >= value))
 	       && ! visited_pt [nindex] ) {
