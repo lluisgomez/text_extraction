@@ -61,7 +61,7 @@ int main( int argc, char** argv )
     //t = (double)cvGetTickCount();
 
     for (int i=0; i<regions.size(); i++)
-      regions[i].er_fill(grey);
+      regions[i].er_fill(grey, mser8.connect8());
 
     //t = cvGetTickCount() - t;
     //cout << "Regions filled in " << t/((double)cvGetTickFrequency()*1000.) << " ms." << endl;

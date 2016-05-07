@@ -31,7 +31,7 @@ public:
 
 	/// Fills an Extremal Region (ER) by region growing from the Index of the initial pixel(pixel_).
 	/// @param[in] grey_img Grey level image
-	void er_fill(cv::Mat& _grey_img);
+	void er_fill(cv::Mat& _grey_img, bool _eight = false);
 
 	std::vector<int> pixels_; ///< list pf all pixels indexes (y * width + x) of the region
 
